@@ -1,0 +1,27 @@
+{
+  "name": "sandboxshot",
+  "version": "1.0.0",
+  "description": "A lib for dinamic screenshots inside html pages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://otavioalves2@github.com/otavioalves2/sandboxshot.git"
+  },
+  "keywords": [
+    "screenshot",
+    "sandboxshot"
+  ],
+  "author": "Otávio Alves",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/otavioalves2/sandboxshot/issues"
+  },
+  "homepage": "https://github.com/otavioalves2/sandboxshot#readme",
+  "dependencies": {
+    "html2canvas": "^1.3.2",
+    "interactjs": "^1.10.11"
+  }
+}

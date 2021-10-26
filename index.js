@@ -1,6 +1,48 @@
-function takeScreenshot(){
-  const divElement = document.getElementsByClassName('resize-drag');
-  const rect = divElement[0].getBoundingClientRect();
+import html2canvas from 'html2canvas';
+import interact from 'interactjs';
+
+const setUp = () => {
+  const sandboxshotDiv = document.getElementsByClassName('sandboxshot')[0];
+  const sandboxshotArea = document.createElement("div");
+  
+  sandboxshotArea.classList.add("sandboxshotArea");
+  Object.assign(sandboxshotArea.style,
+  {
+      width:"120px",
+      borderStyle:"solid",
+      borderColor:"red",
+      position: "absolute",
+      zIndex: "9999",
+      touchAction: "none",
+      boxSizing: "border-box",
+      padding: "20px",
+      margin: "1rem"
+  });
+  sandboxshotDiv.appendChild(sandboxshotArea);
+
+  const screenMeasures = document.body.getBoundingClientRect();
+
+  const sandboxshotCanvas = document.createElement("canvas");
+
+  sandboxshotDiv.appendChild(sandboxshotCanvas);
+  sandboxshotCanvas.style.opacity = "0.5";
+  sandboxshotCanvas.style.position = "absolute";
+  sandboxshotCanvas.style.zIndex = "9998";
+  
+  const sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
+
+  const sandboxshotCtx = sandboxshotCanvas.getContext("2d");
+  sandboxshotCtx.canvas.width  = window.innerWidth;
+  sandboxshotCtx.canvas.height = window.innerHeight;
+
+  sandboxshotCtx.globalCompositeOperation = 'xor';
+
+  sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
+  sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
+}
+const takeScreenshot = () => {
+  const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
+  const rect = sandboxshotDiv.getBoundingClientRect();
   
   html2canvas(document.body, {x: rect.x, y: rect.y, width: rect.width, height: rect.height}).then(function(canvas) {
     document.body.appendChild(canvas);
@@ -14,10 +56,11 @@ function takeScreenshot(){
     canvas.remove()
   })
 }
-function openBox(){
-  this.showBox = true;    
+
+const openBox = () => {  
+  setUp();
   const position = { x: 0, y: 0 }
-  interact('.resize-drag')
+  interact('.sandboxshotArea')
   .resizable({
     edges: { top: true, left: true, bottom: true, right: true },
     listeners: {
@@ -48,3 +91,10 @@ function openBox(){
     }
   })
 }
+
+const sandboxshot = {
+  openBox: openBox,
+  takeScreenshot: takeScreenshot
+}
+
+export default sandboxshot
