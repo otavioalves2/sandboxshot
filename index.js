@@ -2,6 +2,26 @@ import html2canvas from 'html2canvas';
 import interact from 'interactjs';
 
 const setUp = () => {
+  
+}
+const takeScreenshot = () => {
+  const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
+  const rect = sandboxshotDiv.getBoundingClientRect();
+  
+  html2canvas(document.body, {x: rect.x, y: rect.y, width: rect.width, height: rect.height}).then(function(canvas) {
+    document.body.appendChild(canvas);
+    return canvas
+  }).then(canvas => {
+    const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
+    const a = document.createElement('a')
+    a.setAttribute('download', 'my-image.png')
+    a.setAttribute('href', image)
+    a.click()
+    canvas.remove()
+  })
+}
+
+const openBox = () => {  
   const sandboxshotDiv = document.getElementsByClassName('sandboxshot')[0];
   const sandboxshotArea = document.createElement("div");
   
@@ -29,7 +49,7 @@ const setUp = () => {
   sandboxshotCanvas.style.position = "absolute";
   sandboxshotCanvas.style.zIndex = "9998";
   
-  const sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
+  let sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
   const sandboxshotCtx = sandboxshotCanvas.getContext("2d");
   sandboxshotCtx.canvas.width  = window.innerWidth;
@@ -39,33 +59,13 @@ const setUp = () => {
 
   sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
   sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
-}
-const takeScreenshot = () => {
-  const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
-  const rect = sandboxshotDiv.getBoundingClientRect();
-  
-  html2canvas(document.body, {x: rect.x, y: rect.y, width: rect.width, height: rect.height}).then(function(canvas) {
-    document.body.appendChild(canvas);
-    return canvas
-  }).then(canvas => {
-    const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
-    const a = document.createElement('a')
-    a.setAttribute('download', 'my-image.png')
-    a.setAttribute('href', image)
-    a.click()
-    canvas.remove()
-  })
-}
 
-const openBox = () => {  
-  setUp();
   const position = { x: 0, y: 0 }
   interact('.sandboxshotArea')
   .resizable({
     edges: { top: true, left: true, bottom: true, right: true },
     listeners: {
       move: function (event) {
-
         position.x = (position.x || 0) + event.deltaRect.left
         position.y = (position.y || 0) + event.deltaRect.top
 
@@ -74,6 +74,13 @@ const openBox = () => {
           height: `${event.rect.height}px`,
           transform: `translate(${position.x}px, ${position.y}px)`
         })
+
+        sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+
+        sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
+
+        sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
+        sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
       }
     }
   }).draggable({
@@ -84,6 +91,13 @@ const openBox = () => {
       move (event) {
         position.x += event.dx
         position.y += event.dy
+        
+        sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+
+        sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
+
+        sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
+        sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
         event.target.style.transform =
           `translate(${position.x}px, ${position.y}px)`
