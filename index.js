@@ -1,9 +1,31 @@
 import html2canvas from 'html2canvas';
 import interact from 'interactjs';
 
-const setUp = () => {
-  
+
+const fillActionsDivWithButtons = (parentDiv) => {
+  const ACTIONS = {
+    "SAVE_LOCAL": takeScreenshot
+  }
+
+  Object.keys(ACTIONS).forEach(action => {
+    const button = document.createElement("div");
+    button.classList.add(action);
+    Object.assign(button.style,
+      {
+          width:"50px",
+          borderStyle:"solid",
+          borderColor:"green",
+          position: "absolute",
+          zIndex: "9999",
+          boxSizing: "border-box",
+          padding: "20px",
+          cursor: "pointer"
+      });
+    button.onclick = ACTIONS[action]
+    parentDiv.appendChild(button);
+  });
 }
+
 const takeScreenshot = () => {
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
@@ -19,6 +41,30 @@ const takeScreenshot = () => {
     a.click()
     canvas.remove()
   })
+}
+const openActions = (parentDiv) => {
+  const actionsDivPrev = document.getElementsByClassName('actionsDiv')[0];
+  if(actionsDivPrev){
+    actionsDivPrev.parentElement.removeChild(actionsDivPrev);
+  }
+  const actionsDiv = document.createElement("div");
+  const parentDivMeasures = parentDiv.getBoundingClientRect();
+  actionsDiv.classList.add("actionsDiv");
+  const marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height - 10}px`
+  Object.assign(actionsDiv.style,
+  {
+      width:"120px",
+      borderStyle:"solid",
+      borderColor:"blue",
+      position: "absolute",
+      zIndex: "9999",
+      boxSizing: "border-box",
+      padding: "20px",
+      marginTop: marginTop,
+      cursor: "default"
+  });
+  parentDiv.appendChild(actionsDiv);
+  fillActionsDivWithButtons(actionsDiv);
 }
 
 const openBox = () => {  
@@ -60,6 +106,8 @@ const openBox = () => {
   sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
   sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
+  openActions(sandboxshotArea);
+
   const position = { x: 0, y: 0 }
   interact('.sandboxshotArea')
   .resizable({
@@ -81,6 +129,7 @@ const openBox = () => {
 
         sandboxshotCtx.fillRect(0,0,screenMeasures.width, screenMeasures.height);
         sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x,sandboxshotAreaMeasures.y,sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
+        openActions(sandboxshotArea);
       }
     }
   }).draggable({
@@ -101,6 +150,7 @@ const openBox = () => {
 
         event.target.style.transform =
           `translate(${position.x}px, ${position.y}px)`
+        openActions(sandboxshotArea);
       },
     }
   })
