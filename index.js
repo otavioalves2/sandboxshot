@@ -65,7 +65,8 @@ const takeScreenshot = () => {
     canvas.remove()
   })
 }
-const openActions = (parentDiv) => {
+
+const openActions = (parentDiv, revert = false) => {
   const actionsDivPrev = document.getElementsByClassName('actionsDiv')[0];
   if (actionsDivPrev) {
     actionsDivPrev.parentElement.removeChild(actionsDivPrev);
@@ -73,7 +74,12 @@ const openActions = (parentDiv) => {
   const actionsDiv = document.createElement("div");
   const parentDivMeasures = parentDiv.getBoundingClientRect();
   actionsDiv.classList.add("actionsDiv");
-  const marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height}px`
+  let marginTop = "";
+  if(!revert){
+    marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height}px`;
+  }else{
+    marginTop = "-50px";
+  }
   Object.assign(actionsDiv.style,
     {
       width: `${parentDivMeasures.width}`,
@@ -124,7 +130,7 @@ const addCirclesToBorder = (parentDiv) => {
   Object.assign(NE.style,
     {
       position: "absolute",
-      left: "99.5%",
+      left: "100%",
       top: "-7px",
       width: "10px",
       height: "10px",
@@ -135,7 +141,7 @@ const addCirclesToBorder = (parentDiv) => {
   Object.assign(L.style,
     {
       position: "absolute",
-      left: "99.5%",
+      left: "100%",
       top: "50%",
       width: "10px",
       height: "10px",
@@ -146,7 +152,7 @@ const addCirclesToBorder = (parentDiv) => {
   Object.assign(SE.style,
     {
       position: "absolute",
-      left: "99.5%",
+      left: "100%",
       top: "99.5%",
       width: "10px",
       height: "10px",
@@ -255,20 +261,27 @@ const openBox = () => {
             height: `${event.rect.height}px`,
             transform: `translate(${position.x}px, ${position.y}px)`
           })
-
+          
           sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
 
           sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
+          const screenMeasures = document.body.getBoundingClientRect();
+         
+
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
-          openActions(sandboxshotArea);
+          if(sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50)){
+            openActions(sandboxshotArea, true);
+          }else{
+            openActions(sandboxshotArea, false);
+          }
         }
       }
     }).draggable({
       listeners: {
         start(event) {
-          console.log(event.type, event.target)
+          
         },
         move(event) {
           position.x += event.dx
@@ -278,12 +291,18 @@ const openBox = () => {
 
           sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
+          
+
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
           event.target.style.transform =
             `translate(${position.x}px, ${position.y}px)`
-          openActions(sandboxshotArea);
+            if(sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50)){
+              openActions(sandboxshotArea, true);
+            }else{
+              openActions(sandboxshotArea, false);
+            }
         },
       }
     })
