@@ -5,24 +5,39 @@ import { faCopy, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons
 
 library.add(faCopy, faSave, faTimesCircle);
 
+const today = new Date();
+
+const date = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
+
+const turnEverythingToSand = () => {
+  const sandboxshot = document.getElementsByClassName("sandboxshot")[0];
+  while (sandboxshot.firstChild) {
+    sandboxshot.removeChild(sandboxshot.lastChild);
+  }
+}
+
 const fillActionsDivWithButtons = (parentDiv) => {
   const ACTIONS = {
     "SAVE_LOCAL": {
-      "function": takeScreenshot,
+      "function": takeScreenshotLocal,
+      "tooltip": "Fazer download",
       "icon": "save"
     },
     "SAVE_CLIPBOARD": {
-      "function": takeScreenshot,
+      "function": takeScreenshotClipboard,
+      "tooltip": "Copiar seleção",
       "icon": "copy"
     },
     "CLOSE": {
-      "function": takeScreenshot,
+      "function": turnEverythingToSand,
+      "tooltip": "Sair (esc)",
       "icon": "times-circle"
     }
   }
 
   Object.keys(ACTIONS).forEach(action => {
     const button = document.createElement("div");
+    button.setAttribute("title", ACTIONS[action].tooltip);
     button.classList.add(action);
     Object.assign(button.style,
       {
@@ -34,7 +49,7 @@ const fillActionsDivWithButtons = (parentDiv) => {
         borderRadius: "50%",
         zIndex: "9999",
         cursor: "pointer",
-        margin: "0 10px 0 0",
+        margin: "0 10px 10px 0",
         filter: "drop-shadow(0 0 0.2rem white)",
         display: "flex",
         justifyContent: "space-evenly",
@@ -49,7 +64,31 @@ const fillActionsDivWithButtons = (parentDiv) => {
   });
 }
 
-const takeScreenshot = () => {
+const takeScreenshotLocal = () => {
+  const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
+  const rect = sandboxshotDiv.getBoundingClientRect();
+
+  html2canvas(document.body, { x: rect.x + 8, y: rect.y + 8, width: rect.width - 10, height: rect.height - 10}).then(function (canvas) {
+    document.body.appendChild(canvas);
+    return canvas
+  }).then(canvas => {
+    const ctx = canvas.getContext("2d");       
+
+    ctx.textBaseline = "hanging";             
+    ctx.font = "bold 16px sans-serif";           
+    ctx.fillStyle = "black";                 
+    ctx.fillText(`Varejo 360 em ${date}`, `${rect.width - 70}`, `${rect.y + rect.height - 20}`);  
+
+    const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
+    const a = document.createElement('a')
+    a.setAttribute('download', 'sandboxshot.png')
+    a.setAttribute('href', image)
+    a.click()
+    canvas.remove()
+  })
+}
+
+const takeScreenshotClipboard = () => {
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
 
@@ -57,16 +96,18 @@ const takeScreenshot = () => {
     document.body.appendChild(canvas);
     return canvas
   }).then(canvas => {
-    const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
-    const a = document.createElement('a')
-    a.setAttribute('download', 'my-image.png')
-    a.setAttribute('href', image)
-    a.click()
-    canvas.remove()
+    const ctx = canvas.getContext("2d");       
+
+    ctx.textBaseline = "hanging";             
+    ctx.font = "bold 16px sans-serif";           
+    ctx.fillStyle = "black";                 
+    ctx.fillText(`Varejo 360 em ${date}`, `${rect.width - 70}`, `${rect.y + rect.height - 20}`); 
+
+    html2canvas(canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})])));
   })
 }
 
-const openActions = (parentDiv, revert = false) => {
+const openActions = (parentDiv, revert = false, hasVerticalSpace = true) => {
   const actionsDivPrev = document.getElementsByClassName('actionsDiv')[0];
   if (actionsDivPrev) {
     actionsDivPrev.parentElement.removeChild(actionsDivPrev);
@@ -75,22 +116,44 @@ const openActions = (parentDiv, revert = false) => {
   const parentDivMeasures = parentDiv.getBoundingClientRect();
   actionsDiv.classList.add("actionsDiv");
   let marginTop = "";
-  if(!revert){
-    marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height}px`;
+  let marginLeft = "";
+  if(hasVerticalSpace){
+    if(!revert){
+      marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height}px`;
+    }else{
+      marginTop = "-50px";
+    }
+    Object.assign(actionsDiv.style,
+      {
+        width: `${parentDivMeasures.width}`,
+        position: "absolute",
+        zIndex: "9999",
+        marginTop: marginTop,
+        cursor: "default",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      });
   }else{
-    marginTop = "-50px";
+    if(revert){
+      marginLeft = (parentDivMeasures.width <= 0) ? "20px" : `${parentDivMeasures.width}px`;
+    }else{
+      marginLeft = "-50px";
+    }
+    Object.assign(actionsDiv.style,
+      {
+        width: `${parentDivMeasures.width}`,
+        position: "absolute",
+        zIndex: "9999",
+        marginLeft: marginLeft,
+        cursor: "default",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center"
+      });
   }
-  Object.assign(actionsDiv.style,
-    {
-      width: `${parentDivMeasures.width}`,
-      position: "absolute",
-      zIndex: "9999",
-      marginTop: marginTop,
-      cursor: "default",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    });
+  
   parentDiv.appendChild(actionsDiv);
   fillActionsDivWithButtons(actionsDiv);
 }
@@ -164,7 +227,7 @@ const addCirclesToBorder = (parentDiv) => {
     {
       position: "absolute",
       left: "50%",
-      top: "99.5%",
+      top: "100%",
       width: "10px",
       height: "10px",
       shapeOutside: "circle()",
@@ -212,16 +275,16 @@ const openBox = () => {
   sandboxshotArea.classList.add("sandboxshotArea");
   Object.assign(sandboxshotArea.style,
     {
-      width: "200px",
-      height: "150px",
+      width:  `${screenMeasures.width - (screenMeasures.width * 0.15)}px`,
+      height: `${screenMeasures.height - (screenMeasures.height * 0.15)}px`,
       borderStyle: "solid",
       borderColor: "#f29200",
       position: "absolute",
       zIndex: "9999",
       touchAction: "none",
       boxSizing: "border-box",
-      marginLeft: `${(screenMeasures.width / 2) - 100}px`,
-      marginTop: `${(screenMeasures.height / 2) - 75}px`
+      left: `${(screenMeasures.width * 0.15)/2}px`,
+      top: `${(screenMeasures.height * 0.15)/2}px`
     });
   sandboxshotDiv.appendChild(sandboxshotArea);
 
@@ -230,7 +293,7 @@ const openBox = () => {
   const sandboxshotCanvas = document.createElement("canvas");
 
   sandboxshotDiv.appendChild(sandboxshotCanvas);
-  sandboxshotCanvas.style.opacity = "0.5";
+  sandboxshotCanvas.style.opacity = "0.7";
   sandboxshotCanvas.style.position = "absolute";
   sandboxshotCanvas.style.zIndex = "9998";
 
@@ -246,6 +309,14 @@ const openBox = () => {
   sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
   openActions(sandboxshotArea);
+
+  document.body.addEventListener("keydown", function (e) {
+    if (e.code === "Escape") {  
+      e.preventDefault();
+  	  e.stopImmediatePropagation();
+      turnEverythingToSand();
+    }
+  });
 
   const position = { x: 0, y: 0 }
   interact('.sandboxshotArea')
@@ -268,49 +339,81 @@ const openBox = () => {
 
           const screenMeasures = document.body.getBoundingClientRect();
          
+          const isActionDivTouchingBottom = sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50);
+          const isActionDivTouchingTop = sandboxshotAreaMeasures.top <= 50;
+          const isActionDivTouchingLeft = sandboxshotAreaMeasures.left <= 50;
 
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
-          if(sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50)){
-            openActions(sandboxshotArea, true);
+          
+          if(isActionDivTouchingBottom){
+            if(isActionDivTouchingTop){
+              if(isActionDivTouchingLeft){
+                openActions(sandboxshotArea, true, false);
+              }else{
+                openActions(sandboxshotArea, false, false);
+              }
+            }else{
+              openActions(sandboxshotArea, true, true);
+            }
           }else{
-            openActions(sandboxshotArea, false);
+            openActions(sandboxshotArea, false, true);
           }
         }
       }
     }).draggable({
       listeners: {
-        start(event) {
-          
-        },
         move(event) {
-          position.x += event.dx
-          position.y += event.dy
+          const isActionDivTouchingBottom = sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50);
+          const isActionDivTouchingTop = sandboxshotAreaMeasures.top <= 50;
+          const isActionDivTouchingLeft = sandboxshotAreaMeasures.left <= 50;
+          
+          const isSandboxshotAreaTouchingTop = (sandboxshotAreaMeasures.top <= 0);
+          const isSandboxshotAreaTouchingBottom = (sandboxshotAreaMeasures.bottom >= screenMeasures.height);
+          const isSandboxshotAreaTouchingLeft = (sandboxshotAreaMeasures.left <= 0);
+          const isSandboxshotAreaTouchingRight = (sandboxshotAreaMeasures.right >= screenMeasures.width);
+
+          if((isSandboxshotAreaTouchingLeft && (event.dx > 0)) || (isSandboxshotAreaTouchingRight && (event.dx <= 0)) || (!isSandboxshotAreaTouchingLeft && !isSandboxshotAreaTouchingRight)){
+            position.x += event.dx
+            console.log(`position.x : ${position.x}`)
+            console.log(`event.dx : ${event.dx}`)
+          }
+          if((isSandboxshotAreaTouchingTop && (event.dy > 0)) || (isSandboxshotAreaTouchingBottom && (event.dy <= 0)) || (!isSandboxshotAreaTouchingTop && !isSandboxshotAreaTouchingBottom)){
+            position.y += event.dy
+            console.log(`position.y : ${position.y}`)
+            console.log(`event.dy : ${event.dy}`)
+          }
 
           sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
 
           sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
-
-          
 
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
           event.target.style.transform =
             `translate(${position.x}px, ${position.y}px)`
-            if(sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50)){
-              openActions(sandboxshotArea, true);
+          
+          if(isActionDivTouchingBottom){
+            if(isActionDivTouchingTop){
+              if(isActionDivTouchingLeft){
+                openActions(sandboxshotArea, true, false);
+              }else{
+                openActions(sandboxshotArea, false, false);
+              }
             }else{
-              openActions(sandboxshotArea, false);
+              openActions(sandboxshotArea, true, true);
             }
+          }else{
+            openActions(sandboxshotArea, false, true);
+          }
         },
       }
     })
 }
 
 const sandboxshot = {
-  openBox: openBox,
-  takeScreenshot: takeScreenshot
+  openBox: openBox
 }
 
 export default sandboxshot
