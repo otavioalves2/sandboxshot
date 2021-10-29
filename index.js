@@ -9,11 +9,18 @@ const today = new Date();
 
 const date = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
 
+var isOpenedVar = false;
+
+const isOpened = () => {
+  return isOpenedVar
+}
+
 const turnEverythingToSand = () => {
   const sandboxshot = document.getElementsByClassName("sandboxshot")[0];
   while (sandboxshot.firstChild) {
     sandboxshot.removeChild(sandboxshot.lastChild);
   }
+  isOpenedVar = false;
 }
 
 const fillActionsDivWithButtons = (parentDiv) => {
@@ -77,7 +84,7 @@ const takeScreenshotLocal = () => {
     ctx.textBaseline = "hanging";             
     ctx.font = "bold 16px sans-serif";           
     ctx.fillStyle = "black";                 
-    ctx.fillText(`Varejo 360 em ${date}`, `${rect.width - 70}`, `${rect.y + rect.height - 20}`);  
+    ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);  
 
     const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
     const a = document.createElement('a')
@@ -310,6 +317,8 @@ const openBox = () => {
 
   openActions(sandboxshotArea);
 
+  isOpenedVar = true;
+
   document.body.addEventListener("keydown", function (e) {
     if (e.code === "Escape") {  
       e.preventDefault();
@@ -413,7 +422,8 @@ const openBox = () => {
 }
 
 const sandboxshot = {
-  openBox: openBox
+  openBox: openBox,
+  isOpened: isOpened
 }
 
 export default sandboxshot
