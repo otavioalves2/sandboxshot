@@ -108,7 +108,7 @@ const takeScreenshotClipboard = () => {
     ctx.textBaseline = "hanging";             
     ctx.font = "bold 16px sans-serif";           
     ctx.fillStyle = "black";                 
-    ctx.fillText(`Varejo 360 em ${date}`, `${rect.width - 70}`, `${rect.y + rect.height - 20}`); 
+    ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`); 
 
     html2canvas(canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})])));
   })
