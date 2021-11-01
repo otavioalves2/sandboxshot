@@ -11,6 +11,8 @@ const date = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullY
 
 var isOpenedVar = false;
 
+var isVarejoGlobal;
+
 const isOpened = () => {
   return isOpenedVar
 }
@@ -84,7 +86,9 @@ const takeScreenshotLocal = () => {
     ctx.textBaseline = "hanging";             
     ctx.font = "bold 16px sans-serif";           
     ctx.fillStyle = "black";                 
-    ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);  
+    if(isVarejoGlobal){
+      ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);
+    } 
 
     const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
     const a = document.createElement('a')
@@ -107,8 +111,10 @@ const takeScreenshotClipboard = () => {
 
     ctx.textBaseline = "hanging";             
     ctx.font = "bold 16px sans-serif";           
-    ctx.fillStyle = "black";                 
-    ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`); 
+    ctx.fillStyle = "black";           
+    if(isVarejoGlobal){
+      ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);
+    }
 
     html2canvas(canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})])));
   })
@@ -274,7 +280,8 @@ const addCirclesToBorder = (parentDiv) => {
   parentDiv.appendChild(O);
 }
 
-const openBox = () => {
+const openBox = (isVarejo = false) => {
+  isVarejoGlobal = isVarejo
   const sandboxshotDiv = document.getElementsByClassName('sandboxshot')[0];
   const sandboxshotArea = document.createElement("div");
   const screenMeasures = document.body.getBoundingClientRect();
