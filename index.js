@@ -5,13 +5,17 @@ import { faCopy, faSave, faTimesCircle } from '@fortawesome/free-solid-svg-icons
 
 library.add(faCopy, faSave, faTimesCircle);
 
+const addZero = (number) => {
+  return number <= 9 ? "0" + number : number 
+}
+
 const today = new Date();
 
-const date = today.getDate() + '/' + (today.getMonth()+1) + '/' + today.getFullYear();
+var isVarejoGlobal;
+
+const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
 
 var isOpenedVar = false;
-
-var isVarejoGlobal;
 
 const isOpened = () => {
   return isOpenedVar
@@ -81,15 +85,13 @@ const takeScreenshotLocal = () => {
     document.body.appendChild(canvas);
     return canvas
   }).then(canvas => {
-    const ctx = canvas.getContext("2d");       
-
-    ctx.textBaseline = "hanging";             
-    ctx.font = "bold 16px sans-serif";           
-    ctx.fillStyle = "black";                 
     if(isVarejoGlobal){
+      const ctx = canvas.getContext("2d");  
+      ctx.textBaseline = "hanging";             
+      ctx.font = "bold 16px sans-serif";           
+      ctx.fillStyle = "black";           
       ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);
-    } 
-
+    }
     const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
     const a = document.createElement('a')
     a.setAttribute('download', 'sandboxshot.png')
@@ -107,15 +109,13 @@ const takeScreenshotClipboard = () => {
     document.body.appendChild(canvas);
     return canvas
   }).then(canvas => {
-    const ctx = canvas.getContext("2d");       
-
-    ctx.textBaseline = "hanging";             
-    ctx.font = "bold 16px sans-serif";           
-    ctx.fillStyle = "black";           
     if(isVarejoGlobal){
+      const ctx = canvas.getContext("2d");  
+      ctx.textBaseline = "hanging";             
+      ctx.font = "bold 16px sans-serif";           
+      ctx.fillStyle = "black";           
       ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);
     }
-
     html2canvas(canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})])));
   })
 }
@@ -132,9 +132,9 @@ const openActions = (parentDiv, revert = false, hasVerticalSpace = true) => {
   let marginLeft = "";
   if(hasVerticalSpace){
     if(!revert){
-      marginTop = (parentDivMeasures.height <= 0) ? "20px" : `${parentDivMeasures.height}px`;
+      marginTop = (parentDivMeasures.height <= 0) ? "25px" : `${parentDivMeasures.height + 5}px`;
     }else{
-      marginTop = "-50px";
+      marginTop = "-55px";
     }
     Object.assign(actionsDiv.style,
       {
@@ -149,9 +149,9 @@ const openActions = (parentDiv, revert = false, hasVerticalSpace = true) => {
       });
   }else{
     if(revert){
-      marginLeft = (parentDivMeasures.width <= 0) ? "20px" : `${parentDivMeasures.width}px`;
+      marginLeft = (parentDivMeasures.width <= 0) ? "25px" : `${parentDivMeasures.width + 5}px`;
     }else{
-      marginLeft = "-50px";
+      marginLeft = "-55px";
     }
     Object.assign(actionsDiv.style,
       {
@@ -281,7 +281,7 @@ const addCirclesToBorder = (parentDiv) => {
 }
 
 const openBox = (isVarejo = false) => {
-  isVarejoGlobal = isVarejo
+  isVarejoGlobal = isVarejo;
   const sandboxshotDiv = document.getElementsByClassName('sandboxshot')[0];
   const sandboxshotArea = document.createElement("div");
   const screenMeasures = document.body.getBoundingClientRect();
@@ -291,8 +291,7 @@ const openBox = (isVarejo = false) => {
     {
       width:  `${screenMeasures.width - (screenMeasures.width * 0.15)}px`,
       height: `${screenMeasures.height - (screenMeasures.height * 0.15)}px`,
-      borderStyle: "solid",
-      borderColor: "#f29200",
+      outline: "solid #f29200",
       position: "absolute",
       zIndex: "9999",
       touchAction: "none",
@@ -332,7 +331,15 @@ const openBox = (isVarejo = false) => {
   	  e.stopImmediatePropagation();
       turnEverythingToSand();
     }
-  });
+  });    
+
+  if(isVarejo){
+    sandboxshotCtx.textBaseline = "hanging";             
+    sandboxshotCtx.font = "bold 16px sans-serif";           
+    sandboxshotCtx.fillStyle = "black";           
+    sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+  }
+
 
   const position = { x: 0, y: 0 }
   interact('.sandboxshotArea')
@@ -362,6 +369,12 @@ const openBox = (isVarejo = false) => {
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
           
+          if(isVarejo){
+            sandboxshotCtx.textBaseline = "hanging";             
+            sandboxshotCtx.font = "bold 16px sans-serif";           
+            sandboxshotCtx.fillStyle = "black";           
+            sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+          }
           if(isActionDivTouchingBottom){
             if(isActionDivTouchingTop){
               if(isActionDivTouchingLeft){
@@ -406,6 +419,13 @@ const openBox = (isVarejo = false) => {
 
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
+
+          if(isVarejo){
+            sandboxshotCtx.textBaseline = "hanging";             
+            sandboxshotCtx.font = "bold 16px sans-serif";           
+            sandboxshotCtx.fillStyle = "black";    
+            sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+          }
 
           event.target.style.transform =
             `translate(${position.x}px, ${position.y}px)`
