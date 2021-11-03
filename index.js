@@ -333,14 +333,6 @@ const openBox = (isVarejo = false) => {
     }
   });    
 
-  if(isVarejo){
-    sandboxshotCtx.textBaseline = "hanging";             
-    sandboxshotCtx.font = "bold 16px sans-serif";           
-    sandboxshotCtx.fillStyle = "black";           
-    sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
-  }
-
-
   const position = { x: 0, y: 0 }
   interact('.sandboxshotArea')
     .resizable({
@@ -388,6 +380,11 @@ const openBox = (isVarejo = false) => {
           }else{
             openActions(sandboxshotArea, false, true);
           }
+        },
+        end: function (event){
+          sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+          sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
+          sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
         }
       }
     }).draggable({
@@ -444,6 +441,11 @@ const openBox = (isVarejo = false) => {
             openActions(sandboxshotArea, false, true);
           }
         },
+        end: function (event){
+          sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+          sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
+          sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height); 
+        }
       }
     })
 }
