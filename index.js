@@ -14,7 +14,8 @@ const today = new Date();
 var isVarejoGlobal;
 
 const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
-
+const dateFilename = addZero(today.getDate().toString()) + '-' + addZero((today.getMonth()+1).toString()) + '-' + today.getFullYear();
+const timeFilename = addZero(today.getHours().toString()) + '-' + addZero(today.getMinutes().toString()) + '-' + addZero(today.getSeconds().toString())
 var isOpenedVar = false;
 
 const isOpened = () => {
@@ -80,13 +81,19 @@ const fillActionsDivWithButtons = (parentDiv) => {
 const takeScreenshotLocal = () => {
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
+  closeActions()
 
   html2canvas(document.body, { x: rect.x + 8, y: rect.y + 8, width: rect.width - 10, height: rect.height - 10}).then(function (canvas) {
     document.body.appendChild(canvas);
     return canvas
   }).then(canvas => {
+    let filename = "sandboxshot.png"
     if(isVarejoGlobal){
+      const nomePagina = document.getElementsByClassName('mat-tooltip-trigger page-title ng-star-inserted')[0].textContent
+      filename = `${nomePagina} - ${dateFilename}_${timeFilename}.png`
       const ctx = canvas.getContext("2d");  
+      ctx.fillStyle = "white";
+      ctx.fillRect(rect.x + rect.width - 215, `${rect.y + rect.height - 30}`, 400, 150);
       ctx.textBaseline = "hanging";             
       ctx.font = "bold 16px sans-serif";           
       ctx.fillStyle = "black";           
@@ -94,16 +101,18 @@ const takeScreenshotLocal = () => {
     }
     const image = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream')
     const a = document.createElement('a')
-    a.setAttribute('download', 'sandboxshot.png')
+    a.setAttribute('download', filename)
     a.setAttribute('href', image)
     a.click()
     canvas.remove()
+    turnEverythingToSand()
   })
 }
 
 const takeScreenshotClipboard = () => {
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
+  closeActions()
 
   html2canvas(document.body, { x: rect.x, y: rect.y, width: rect.width, height: rect.height }).then(function (canvas) {
     document.body.appendChild(canvas);
@@ -111,16 +120,28 @@ const takeScreenshotClipboard = () => {
   }).then(canvas => {
     if(isVarejoGlobal){
       const ctx = canvas.getContext("2d");  
+      ctx.fillStyle = "white";
+      ctx.fillRect(rect.x + rect.width - 215, `${rect.y + rect.height - 30}`, 400, 150);
       ctx.textBaseline = "hanging";             
       ctx.font = "bold 16px sans-serif";           
       ctx.fillStyle = "black";           
       ctx.fillText(`Varejo 360 em ${date}`, `${rect.x + rect.width - 200}`, `${rect.y + rect.height - 20}`);
     }
-    html2canvas(canvas.toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})])));
+    html2canvas(
+      canvas.toBlob(blob => 
+        navigator.clipboard.write([new ClipboardItem({'image/png': blob})]) 
+        )).then(
+          turnEverythingToSand()
+        );
   })
 }
-
-const openActions = (parentDiv, revert = false, hasVerticalSpace = true) => {
+const closeActions = () => {
+  const actionsDivPrev = document.getElementsByClassName('actionsDiv')[0];
+  if (actionsDivPrev) {
+    actionsDivPrev.parentElement.removeChild(actionsDivPrev);
+  }
+}
+const openActions = (parentDiv, revert = false, hasVerticalSpace = true, fullScreen = false) => {
   const actionsDivPrev = document.getElementsByClassName('actionsDiv')[0];
   if (actionsDivPrev) {
     actionsDivPrev.parentElement.removeChild(actionsDivPrev);
@@ -130,42 +151,58 @@ const openActions = (parentDiv, revert = false, hasVerticalSpace = true) => {
   actionsDiv.classList.add("actionsDiv");
   let marginTop = "";
   let marginLeft = "";
-  if(hasVerticalSpace){
-    if(!revert){
-      marginTop = (parentDivMeasures.height <= 0) ? "25px" : `${parentDivMeasures.height + 5}px`;
-    }else{
-      marginTop = "-55px";
-    }
+  if(fullScreen){
     Object.assign(actionsDiv.style,
       {
         width: `${parentDivMeasures.width}`,
         position: "absolute",
         zIndex: "9999",
-        marginTop: marginTop,
+        marginTop: "25px",
+        marginLeft: `${parentDivMeasures.width - 170}px`,
         cursor: "default",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
       });
   }else{
-    if(revert){
-      marginLeft = (parentDivMeasures.width <= 0) ? "25px" : `${parentDivMeasures.width + 5}px`;
+    if(hasVerticalSpace){
+      if(!revert){
+        marginTop = (parentDivMeasures.height <= 0) ? "25px" : `${parentDivMeasures.height + 5}px`;
+      }else{
+        marginTop = "-55px";
+      }
+      Object.assign(actionsDiv.style,
+        {
+          width: `${parentDivMeasures.width}`,
+          position: "absolute",
+          zIndex: "9999",
+          marginTop: marginTop,
+          cursor: "default",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        });
     }else{
-      marginLeft = "-55px";
+      if(revert){
+        marginLeft = (parentDivMeasures.width <= 0) ? "25px" : `${parentDivMeasures.width + 5}px`;
+      }else{
+        marginLeft = "-55px";
+      }
+      Object.assign(actionsDiv.style,
+        {
+          width: `${parentDivMeasures.width}`,
+          position: "absolute",
+          zIndex: "9999",
+          marginLeft: marginLeft,
+          cursor: "default",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        });
     }
-    Object.assign(actionsDiv.style,
-      {
-        width: `${parentDivMeasures.width}`,
-        position: "absolute",
-        zIndex: "9999",
-        marginLeft: marginLeft,
-        cursor: "default",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center"
-      });
   }
+  
   
   parentDiv.appendChild(actionsDiv);
   fillActionsDivWithButtons(actionsDiv);
@@ -304,17 +341,27 @@ const openBox = (isVarejo = false) => {
   addCirclesToBorder(sandboxshotArea);
 
   const sandboxshotCanvas = document.createElement("canvas");
+  const watermarkCanvas = document.createElement("canvas");
 
   sandboxshotDiv.appendChild(sandboxshotCanvas);
   sandboxshotCanvas.style.opacity = "0.7";
   sandboxshotCanvas.style.position = "absolute";
   sandboxshotCanvas.style.zIndex = "9998";
+  
+  sandboxshotDiv.appendChild(watermarkCanvas);
+  watermarkCanvas.style.opacity = "1";
+  watermarkCanvas.style.position = "absolute";
+  watermarkCanvas.style.zIndex = "9998";
 
   let sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
   const sandboxshotCtx = sandboxshotCanvas.getContext("2d");
   sandboxshotCtx.canvas.width = window.innerWidth;
   sandboxshotCtx.canvas.height = window.innerHeight;
+
+  const watermarkCtx = watermarkCanvas.getContext("2d");
+  watermarkCtx.canvas.width = window.innerWidth;
+  watermarkCtx.canvas.height = window.innerHeight;
 
   sandboxshotCtx.globalCompositeOperation = 'xor';
 
@@ -324,6 +371,15 @@ const openBox = (isVarejo = false) => {
   openActions(sandboxshotArea);
 
   isOpenedVar = true;
+
+  if(isVarejo){
+    watermarkCtx.fillStyle = "white";
+    watermarkCtx.fillRect((sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 215), (sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 30), 215, 30);
+    watermarkCtx.fillStyle = "black";    
+    watermarkCtx.textBaseline = "hanging";             
+    watermarkCtx.font = "bold 16px sans-serif";           
+    watermarkCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+  }
 
   document.body.addEventListener("keydown", function (e) {
     if (e.code === "Escape") {  
@@ -349,6 +405,7 @@ const openBox = (isVarejo = false) => {
           })
           
           sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+          watermarkCtx.clearRect(0, 0, watermarkCtx.canvas.width, watermarkCtx.canvas.height);
 
           sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
@@ -357,20 +414,27 @@ const openBox = (isVarejo = false) => {
           const isActionDivTouchingBottom = sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50);
           const isActionDivTouchingTop = sandboxshotAreaMeasures.top <= 50;
           const isActionDivTouchingLeft = sandboxshotAreaMeasures.left <= 50;
+          const isActionDivTouchingRight = sandboxshotAreaMeasures.right >= (screenMeasures.right - 50);
 
           sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
           
           if(isVarejo){
-            sandboxshotCtx.textBaseline = "hanging";             
-            sandboxshotCtx.font = "bold 16px sans-serif";           
-            sandboxshotCtx.fillStyle = "black";           
-            sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+            watermarkCtx.fillStyle = "white";
+            watermarkCtx.fillRect((sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 215), (sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 30), 215, 30);
+            watermarkCtx.fillStyle = "black";    
+            watermarkCtx.textBaseline = "hanging";             
+            watermarkCtx.font = "bold 16px sans-serif";           
+            watermarkCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
           }
           if(isActionDivTouchingBottom){
             if(isActionDivTouchingTop){
               if(isActionDivTouchingLeft){
-                openActions(sandboxshotArea, true, false);
+                if(isActionDivTouchingRight){
+                  openActions(sandboxshotArea, true, true, true);
+                }else{
+                  openActions(sandboxshotArea, true, false);
+                }
               }else{
                 openActions(sandboxshotArea, false, false);
               }
@@ -380,11 +444,6 @@ const openBox = (isVarejo = false) => {
           }else{
             openActions(sandboxshotArea, false, true);
           }
-        },
-        end: function (event){
-          sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
-          sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
-          sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
         }
       }
     }).draggable({
@@ -393,6 +452,7 @@ const openBox = (isVarejo = false) => {
           const isActionDivTouchingBottom = sandboxshotAreaMeasures.bottom >= (screenMeasures.bottom - 50);
           const isActionDivTouchingTop = sandboxshotAreaMeasures.top <= 50;
           const isActionDivTouchingLeft = sandboxshotAreaMeasures.left <= 50;
+          const isActionDivTouchingRight = sandboxshotAreaMeasures.right >= (screenMeasures.right - 50);
           
           const isSandboxshotAreaTouchingTop = (sandboxshotAreaMeasures.top <= 0);
           const isSandboxshotAreaTouchingBottom = (sandboxshotAreaMeasures.bottom >= screenMeasures.height);
@@ -401,16 +461,13 @@ const openBox = (isVarejo = false) => {
 
           if((isSandboxshotAreaTouchingLeft && (event.dx > 0)) || (isSandboxshotAreaTouchingRight && (event.dx <= 0)) || (!isSandboxshotAreaTouchingLeft && !isSandboxshotAreaTouchingRight)){
             position.x += event.dx
-            console.log(`position.x : ${position.x}`)
-            console.log(`event.dx : ${event.dx}`)
           }
           if((isSandboxshotAreaTouchingTop && (event.dy > 0)) || (isSandboxshotAreaTouchingBottom && (event.dy <= 0)) || (!isSandboxshotAreaTouchingTop && !isSandboxshotAreaTouchingBottom)){
             position.y += event.dy
-            console.log(`position.y : ${position.y}`)
-            console.log(`event.dy : ${event.dy}`)
           }
 
           sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
+          watermarkCtx.clearRect(0, 0, watermarkCtx.canvas.width, watermarkCtx.canvas.height);
 
           sandboxshotAreaMeasures = sandboxshotArea.getBoundingClientRect();
 
@@ -418,10 +475,12 @@ const openBox = (isVarejo = false) => {
           sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height);
 
           if(isVarejo){
-            sandboxshotCtx.textBaseline = "hanging";             
-            sandboxshotCtx.font = "bold 16px sans-serif";           
-            sandboxshotCtx.fillStyle = "black";    
-            sandboxshotCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
+            watermarkCtx.fillStyle = "white";
+            watermarkCtx.fillRect((sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 215), (sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 30), 215, 30);
+            watermarkCtx.fillStyle = "black";    
+            watermarkCtx.textBaseline = "hanging";             
+            watermarkCtx.font = "bold 16px sans-serif";           
+            watermarkCtx.fillText(`Varejo 360 em ${date}`, `${sandboxshotAreaMeasures.x + sandboxshotAreaMeasures.width - 200}`, `${sandboxshotAreaMeasures.y + sandboxshotAreaMeasures.height - 20}`);
           }
 
           event.target.style.transform =
@@ -430,7 +489,11 @@ const openBox = (isVarejo = false) => {
           if(isActionDivTouchingBottom){
             if(isActionDivTouchingTop){
               if(isActionDivTouchingLeft){
-                openActions(sandboxshotArea, true, false);
+                if(isActionDivTouchingRight){
+                  openActions(sandboxshotArea, true, true, true);
+                }else{
+                  openActions(sandboxshotArea, true, false);
+                }
               }else{
                 openActions(sandboxshotArea, false, false);
               }
@@ -440,11 +503,6 @@ const openBox = (isVarejo = false) => {
           }else{
             openActions(sandboxshotArea, false, true);
           }
-        },
-        end: function (event){
-          sandboxshotCtx.clearRect(0, 0, sandboxshotCtx.canvas.width, sandboxshotCtx.canvas.height);
-          sandboxshotCtx.fillRect(0, 0, screenMeasures.width, screenMeasures.height);
-          sandboxshotCtx.fillRect(sandboxshotAreaMeasures.x, sandboxshotAreaMeasures.y, sandboxshotAreaMeasures.width, sandboxshotAreaMeasures.height); 
         }
       }
     })
