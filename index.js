@@ -9,13 +9,11 @@ const addZero = (number) => {
   return number <= 9 ? "0" + number : number 
 }
 
-const today = new Date();
+const copiedToClipboardEvent = new Event('copiedToClipboard');
+const saveLocallyEvent = new Event('saveLocally');
 
 var isVarejoGlobal;
 
-const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
-const dateFilename = addZero(today.getDate().toString()) + '-' + addZero((today.getMonth()+1).toString()) + '-' + today.getFullYear();
-const timeFilename = addZero(today.getHours().toString()) + '-' + addZero(today.getMinutes().toString()) + '-' + addZero(today.getSeconds().toString())
 var isOpenedVar = false;
 
 const isOpened = () => {
@@ -79,6 +77,11 @@ const fillActionsDivWithButtons = (parentDiv) => {
 }
 
 const takeScreenshotLocal = () => {
+  const today = new Date();
+  const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
+  const dateFilename = addZero(today.getDate().toString()) + '-' + addZero((today.getMonth()+1).toString()) + '-' + today.getFullYear();
+  const timeFilename = addZero(today.getHours().toString()) + '-' + addZero(today.getMinutes().toString()) + '-' + addZero(today.getSeconds().toString())
+
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
   closeActions()
@@ -90,7 +93,8 @@ const takeScreenshotLocal = () => {
     let filename = "sandboxshot.png"
     if(isVarejoGlobal){
       const nomePagina = document.getElementsByClassName('mat-tooltip-trigger page-title ng-star-inserted')[0].textContent
-      filename = `${nomePagina} - ${dateFilename}_${timeFilename}.png`
+      const nomeRelatorio = document.getElementsByClassName('report-title')[0].textContent
+      filename = `${nomeRelatorio} - ${nomePagina} - ${dateFilename}_${timeFilename}.png`
       const ctx = canvas.getContext("2d");  
       ctx.fillStyle = "white";
       ctx.fillRect(rect.x + rect.width - 215, `${rect.y + rect.height - 30}`, 400, 150);
@@ -106,10 +110,14 @@ const takeScreenshotLocal = () => {
     a.click()
     canvas.remove()
     turnEverythingToSand()
+    document.dispatchEvent(saveLocallyEvent)
   })
 }
 
 const takeScreenshotClipboard = () => {
+  const today = new Date();
+  const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
+  
   const sandboxshotDiv = document.getElementsByClassName('sandboxshotArea')[0];
   const rect = sandboxshotDiv.getBoundingClientRect();
   closeActions()
@@ -129,9 +137,11 @@ const takeScreenshotClipboard = () => {
     }
     html2canvas(
       canvas.toBlob(blob => 
-        navigator.clipboard.write([new ClipboardItem({'image/png': blob})]) 
+          navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
         )).then(
           turnEverythingToSand()
+        ).then(
+          document.dispatchEvent(copiedToClipboardEvent)
         );
   })
 }
