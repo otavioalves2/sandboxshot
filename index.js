@@ -9,6 +9,9 @@ const addZero = (number) => {
   return number <= 9 ? "0" + number : number 
 }
 
+const today = new Date();
+const date = addZero(today.getDate().toString()) + '/' + addZero((today.getMonth()+1).toString()) + '/' + today.getFullYear();
+
 const copiedToClipboardEvent = new Event('copiedToClipboard');
 const saveLocallyEvent = new Event('saveLocally');
 
@@ -91,10 +94,12 @@ const takeScreenshotLocal = () => {
     return canvas
   }).then(canvas => {
     let filename = "sandboxshot.png"
-    if(isVarejoGlobal){
-      const nomePagina = document.getElementsByClassName('mat-tooltip-trigger page-title ng-star-inserted')[0].textContent
-      const nomeRelatorio = document.getElementsByClassName('report-title')[0].textContent
+    const nomePagina = document.getElementsByClassName('mat-tooltip-trigger page-title ng-star-inserted')[0].textContent
+    const nomeRelatorio = document.getElementsByClassName('report-title')[0].textContent
+    if(nomePagina){
       filename = `${nomeRelatorio} - ${nomePagina} - ${dateFilename}_${timeFilename}.png`
+    }
+    if(isVarejoGlobal){
       const ctx = canvas.getContext("2d");  
       ctx.fillStyle = "white";
       ctx.fillRect(rect.x + rect.width - 215, `${rect.y + rect.height - 30}`, 400, 150);
